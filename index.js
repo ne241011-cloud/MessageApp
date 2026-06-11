@@ -1,6 +1,6 @@
-
 const express = require("express");
 const Sequelize = require("sequelize");
+const { Op } = require("sequelize"); // ←追加
 
 let DB_INFO = "postgres://messageapp:TheFirstTest@postgres:5432/messageapp";
 let pg_option = {};
@@ -34,8 +34,7 @@ const Messages = sequelize.define(
     message: Sequelize.TEXT,
   },
   {
-    // timestamps: false,      // disable the default timestamps
-    freezeTableName: true, // stick to the table name we define
+    freezeTableName: true,
   },
 );
 
@@ -57,19 +56,25 @@ async function main() {
 main();
 
 let lastMessage = "";
+
 function setupRoute() {
+
+  // トップページ
   app.get("/", (req, res) => {
     res.render("top.ejs");
   });
 
+  // 登録ページ表示
   app.get("/add", (req, res) => {
     res.render("add.ejs", { lastMessage: lastMessage });
   });
 
+  // 登録処理
   app.post("/add", async (req, res) => {
     let newMessage = new Messages({
       message: req.body.text,
     });
+
     try {
       await newMessage.save();
       lastMessage = req.body.text;
@@ -79,17 +84,61 @@ function setupRoute() {
     }
   });
 
+  // 一覧表示
   app.get("/view", async (req, res) => {
     try {
       let result = await Messages.findAll();
-      console.log(result);
+
       let allMessages = result.map((e) => {
         return e.message + " " + e.createdAt;
       });
-      res.render("view.ejs", { messages: allMessages });
+
+      res.render("view.ejs", {
+        messages: allMessages,
+      });
+
     } catch (error) {
       res.status(500).send("error");
     }
   });
+
+  // =====================
+  // 検索画面表示
+  // =====================
+
+  app.get("/search", (req, res) => {
+    res.render("search.ejs", {
+      messages: [],
+    });
+  });
+
+  // =====================
+  // 検索実行
+  // =====================
+
+  app.post("/search", async (req, res) => {
+    try {
+
+      let result = await Messages.findAll({
+        where: {
+          message: {
+            [Op.regexp]: req.body.searchText,
+          },
+        },
+      });
+
+      let allMessages = result.map((e) => {
+        return e.message + " " + e.createdAt;
+      });
+
+      res.render("search.ejs", {
+        messages: allMessages,
+      });
+
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("error");
+    }
+  });
+
 }
-    

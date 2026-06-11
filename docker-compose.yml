@@ -34,7 +34,7 @@ services:
     container_name: pgadmin
     restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: ここは各自のメールアドレス
+      PGADMIN_DEFAULT_EMAIL: ne241011@senshu-u.jp
       PGADMIN_DEFAULT_PASSWORD: nn123mm
     ports:
       - 8081:80
