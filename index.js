@@ -1,20 +1,27 @@
 const express = require("express");
 const Sequelize = require("sequelize");
-const { Op } = require("sequelize"); // ←追加
+const { Op } = require("sequelize");
 
 let DB_INFO;
 let pg_option = {};
 
-// process.env.DATABASE_URL が存在し、かつ中身が空っぽ（あるいは 'null' という文字列）でない場合
+// Renderの環境変数が「存在し、かつ有効な文字列であるか」を厳格にチェック
 if (process.env.DATABASE_URL && process.env.DATABASE_URL !== 'null' && process.env.DATABASE_URL !== '') {
+  // 🟢 Render環境
   DB_INFO = process.env.DATABASE_URL;
-  pg_option = { ssl: { require: true, rejectUnauthorized: false } };
+  pg_option = { 
+    ssl: { 
+      require: true, 
+      rejectUnauthorized: false 
+    } 
+  };
 } else {
-  // ローカル（Docker）環境用のURL
+  // 🔵 ローカルDocker環境
   DB_INFO = "postgres://messageapp:TheFirstTest@postgres:5432/messageapp";
   pg_option = {};
 }
 
+// 確定したDB_INFOを使ってSequelizeを初期化
 const sequelize = new Sequelize(DB_INFO, {
   dialect: "postgres",
   dialectOptions: pg_option,
