@@ -7,7 +7,8 @@ let pg_option = {};
 
 if (process.env.DATABASE_URL) {
   DB_INFO = process.env.DATABASE_URL;
-  pg_option = { ssl: { rejectUnauthorized: false } };
+  // 👇 require: true を追加します！
+  pg_option = { ssl: { require: true, rejectUnauthorized: false } };
 }
 
 const sequelize = new Sequelize(DB_INFO, {
