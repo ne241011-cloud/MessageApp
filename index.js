@@ -2,13 +2,17 @@ const express = require("express");
 const Sequelize = require("sequelize");
 const { Op } = require("sequelize"); // ←追加
 
-let DB_INFO = "postgres://messageapp:TheFirstTest@postgres:5432/messageapp";
+let DB_INFO;
 let pg_option = {};
 
-if (process.env.DATABASE_URL) {
+// process.env.DATABASE_URL が存在し、かつ中身が空っぽ（あるいは 'null' という文字列）でない場合
+if (process.env.DATABASE_URL && process.env.DATABASE_URL !== 'null' && process.env.DATABASE_URL !== '') {
   DB_INFO = process.env.DATABASE_URL;
-  // 👇 require: true を追加します！
   pg_option = { ssl: { require: true, rejectUnauthorized: false } };
+} else {
+  // ローカル（Docker）環境用のURL
+  DB_INFO = "postgres://messageapp:TheFirstTest@postgres:5432/messageapp";
+  pg_option = {};
 }
 
 const sequelize = new Sequelize(DB_INFO, {
