@@ -5,9 +5,17 @@ const { Op } = require("sequelize");
 let DB_INFO;
 let pg_option = {};
 
-// Renderの環境変数が「存在し、かつ有効な文字列であるか」を厳格にチェック
-if (process.env.DATABASE_URL && process.env.DATABASE_URL !== 'null' && process.env.DATABASE_URL !== '') {
-  // 🟢 Render環境
+// デバッグ用：Renderのログに実際に何が届いているか出力させる
+console.log("--- DEBUG DATABASE_URL ---");
+console.log("Type:", typeof process.env.DATABASE_URL);
+console.log("Value:", process.env.DATABASE_URL);
+
+// 文字列として正しく、かつ 'postgres' から始まっている場合のみRenderの設定を使う
+if (
+  typeof process.env.DATABASE_URL === 'string' && 
+  process.env.DATABASE_URL.startsWith('postgres')
+) {
+  // 🟢 正真正銘のRender環境
   DB_INFO = process.env.DATABASE_URL;
   pg_option = { 
     ssl: { 
@@ -16,12 +24,11 @@ if (process.env.DATABASE_URL && process.env.DATABASE_URL !== 'null' && process.e
     } 
   };
 } else {
-  // 🔵 ローカルDocker環境
+  // 🔵 ローカルDocker環境（Render側でURLが狂っている場合も一旦こちらに逃がす）
   DB_INFO = "postgres://messageapp:TheFirstTest@postgres:5432/messageapp";
   pg_option = {};
 }
 
-// 確定したDB_INFOを使ってSequelizeを初期化
 const sequelize = new Sequelize(DB_INFO, {
   dialect: "postgres",
   dialectOptions: pg_option,
